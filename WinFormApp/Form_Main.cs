@@ -2721,6 +2721,8 @@ namespace WinFormApp
 
                         //
 
+                        AutoAppendStop();
+
                         if (!GameIsOver && ThisRecord.Score + ThisRecord.CurrentScore > 0)
                         {
                             SaveLastGame();
@@ -2747,16 +2749,12 @@ namespace WinFormApp
 
                         //
 
-                        Panel_Environment.Focus();
-
-                        //
+                        AutoAppendStop();
 
                         if (!GameIsOver && ThisRecord.Score + ThisRecord.CurrentScore > 0)
                         {
                             SaveLastGame();
                         }
-
-                        ExitGameUI();
                     }
                     break;
             }
@@ -2945,8 +2943,6 @@ namespace WinFormApp
             GameUINow = false;
 
             //
-
-            AutoAppendStop();
 
             Panel_FunctionArea.Visible = true;
             Panel_GameUI.Visible = false;
