@@ -2,7 +2,7 @@
 Copyright © 2013-2018 chibayuki@foxmail.com
 
 消除方块
-Version 7.1.17000.4720.R16.180605-0000
+Version 7.1.17000.4720.R16.180606-0000
 
 This file is part of 消除方块
 
@@ -39,7 +39,7 @@ namespace WinFormApp
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
         private static readonly string LabString = "R16"; // 分支名。
-        private static readonly string BuildTime = "180605-0000"; // 编译时间。
+        private static readonly string BuildTime = "180606-0000"; // 编译时间。
 
         //
 
@@ -200,7 +200,7 @@ namespace WinFormApp
 
         private Int32[,] ElementArray_Last = new Int32[CAPACITY, CAPACITY]; // 上次游戏的元素矩阵。
 
-        private List<Point> ElementIndexList_Last = new List<Point>(0); // 上次游戏的元素索引列表。
+        private List<Point> ElementIndexList_Last = new List<Point>(CAPACITY * CAPACITY); // 上次游戏的元素索引列表。
 
         #endregion
 
@@ -806,7 +806,7 @@ namespace WinFormApp
                     if (OldVersionList.Count > 0)
                     {
                         List<Version> OldVersionList_Copy = new List<Version>(OldVersionList);
-                        List<Version> OldVersionList_Sorted = new List<Version>(0);
+                        List<Version> OldVersionList_Sorted = new List<Version>(OldVersionList_Copy.Count);
 
                         while (OldVersionList_Copy.Count > 0)
                         {
@@ -826,11 +826,13 @@ namespace WinFormApp
 
                         for (int i = 0; i < OldVersionList_Sorted.Count; i++)
                         {
-                            if (Directory.Exists(RootDir_Product + "\\" + OldVersionList_Sorted[i].Build + "." + OldVersionList_Sorted[i].Revision))
+                            string Dir = RootDir_Product + "\\" + OldVersionList_Sorted[i].Build + "." + OldVersionList_Sorted[i].Revision;
+
+                            if (Directory.Exists(Dir))
                             {
                                 try
                                 {
-                                    Com.IO.CopyFolder(RootDir_Product + "\\" + OldVersionList_Sorted[i].Build + "." + OldVersionList_Sorted[i].Revision, RootDir_CurrentVersion);
+                                    Com.IO.CopyFolder(Dir, RootDir_CurrentVersion);
 
                                     break;
                                 }
@@ -2027,7 +2029,7 @@ namespace WinFormApp
 
         // 统计。
 
-        private List<Point> AdjacentEqualityIndexList = new List<Point>(0); // 元素矩阵中相邻相等元素的索引列表。
+        private List<Point> AdjacentEqualityIndexList = new List<Point>(CAPACITY * CAPACITY); // 元素矩阵中相邻相等元素的索引列表。
 
         private void ElementArray_RecursivelyAccounting(Point A)
         {
@@ -2035,7 +2037,7 @@ namespace WinFormApp
             // 递归统计元素矩阵中所有与指定索引处的元素相邻相等的元素的索引。A：索引。
             //
 
-            List<Point> IDListTmp = new List<Point>(0); // 每次递归过程直接相邻相等元素索引列表。
+            List<Point> IDListTmp = new List<Point>(4); // 每次递归过程直接相邻相等元素索引列表。
 
             if (ElementArray[A.X, A.Y] != 0)
             {
@@ -2160,7 +2162,7 @@ namespace WinFormApp
 
                         for (int X = 0; X < Range.Width; X++)
                         {
-                            List<Int32> Column = new List<Int32>(0);
+                            List<Int32> Column = new List<Int32>(Range.Height);
 
                             for (int Y = 1; Y < Range.Height; Y++)
                             {
@@ -2239,7 +2241,7 @@ namespace WinFormApp
                         }
 
                         Int32[,] Matrix = new Int32[Range.Width, Range.Height];
-                        List<Int32> IndexList = new List<Int32>(0);
+                        List<Int32> IndexList = new List<Int32>(Range.Width);
 
                         for (int X = 0; X < Range.Width; X++)
                         {
@@ -2489,7 +2491,7 @@ namespace WinFormApp
 
         // 判定。
 
-        private List<Int32> CeilingElementIndexList = new List<Int32>(0); // 已到达顶部的元素的水平索引列表。
+        private List<Int32> CeilingElementIndexList = new List<Int32>(CAPACITY); // 已到达顶部的元素的水平索引列表。
 
         private void Judgement()
         {
@@ -2667,7 +2669,7 @@ namespace WinFormApp
 
                         //
 
-                        if (GameIsOver)
+                        if (GameIsOver || CeilingElementIndexList.Count > 0)
                         {
                             ThisGameTime = TimeSpan.Zero;
 
@@ -2842,7 +2844,7 @@ namespace WinFormApp
 
             ToolTip_InterruptPrompt.RemoveAll();
 
-            ToolTip_InterruptPrompt.SetToolTip(PictureBox_Restart, (GameIsOver ? "重新开始" : "重玩本关"));
+            ToolTip_InterruptPrompt.SetToolTip(PictureBox_Restart, ((GameIsOver || CeilingElementIndexList.Count > 0) ? "重新开始" : "重玩本关"));
         }
 
         private void PictureBox_Restart_Click(object sender, EventArgs e)
@@ -3042,7 +3044,7 @@ namespace WinFormApp
 
                             if (MaxY <= Range.Height - 2)
                             {
-                                List<Point> BottomNew = new List<Point>(0);
+                                List<Point> BottomNew = new List<Point>(Range.Width);
 
                                 for (int X = 0; X < Range.Width; X++)
                                 {
