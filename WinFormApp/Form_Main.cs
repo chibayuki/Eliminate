@@ -2,7 +2,7 @@
 Copyright © 2013-2018 chibayuki@foxmail.com
 
 消除方块
-Version 7.1.17000.4720.R16.180606-0000
+Version 7.1.17000.4720.R16.180607-0000
 
 This file is part of 消除方块
 
@@ -39,7 +39,7 @@ namespace WinFormApp
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
         private static readonly string LabString = "R16"; // 分支名。
-        private static readonly string BuildTime = "180606-0000"; // 编译时间。
+        private static readonly string BuildTime = "180607-0000"; // 编译时间。
 
         //
 
@@ -2669,7 +2669,7 @@ namespace WinFormApp
 
                         //
 
-                        if (GameIsOver || CeilingElementIndexList.Count > 0)
+                        if (GameIsOver || (CeilingElementIndexList.Count > 0 && ThisRecord.CurrentSurplus > 0))
                         {
                             ThisGameTime = TimeSpan.Zero;
 
@@ -2842,7 +2842,7 @@ namespace WinFormApp
 
             ToolTip_InterruptPrompt.RemoveAll();
 
-            ToolTip_InterruptPrompt.SetToolTip(PictureBox_Restart, ((GameIsOver || CeilingElementIndexList.Count > 0) ? "重新开始" : "重玩本关"));
+            ToolTip_InterruptPrompt.SetToolTip(PictureBox_Restart, ((GameIsOver || (CeilingElementIndexList.Count > 0 && ThisRecord.CurrentSurplus > 0)) ? "重新开始" : "重玩本关"));
         }
 
         private void PictureBox_Restart_Click(object sender, EventArgs e)
