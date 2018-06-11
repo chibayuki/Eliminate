@@ -2,7 +2,7 @@
 Copyright © 2013-2018 chibayuki@foxmail.com
 
 消除方块
-Version 7.1.17000.4720.R16.180610-0000
+Version 7.1.17000.4720.R16.180611-0000
 
 This file is part of 消除方块
 
@@ -39,7 +39,7 @@ namespace WinFormApp
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
         private static readonly string LabString = "R16"; // 分支名。
-        private static readonly string BuildTime = "180610-0000"; // 编译时间。
+        private static readonly string BuildTime = "180611-0000"; // 编译时间。
 
         //
 
@@ -82,6 +82,10 @@ namespace WinFormApp
 
         #region 配置设置变量
 
+        private Int32 ElementSize = 40; // 元素边长。
+
+        //
+
         private static readonly SizeF RangeAspectRatio = new SizeF(8F, 5F); // 界面布局的宽高比。
         private const Int32 RangeWidthStep = 4; // 界面布局宽度步长.
 
@@ -122,13 +126,9 @@ namespace WinFormApp
 
         private const Int32 CAPACITY = 64; // 元素矩阵容量的平方根。
 
-        private Int32[,] ElementArray = new Int32[CAPACITY, CAPACITY]; // 元素矩阵。
+        private Int32[,] ElementMatrix = new Int32[CAPACITY, CAPACITY]; // 元素矩阵。
 
         private List<Point> ElementIndexList = new List<Point>(CAPACITY * CAPACITY); // 元素索引列表。
-
-        //
-
-        private Int32 ElementSize = 40; // 元素边长。
 
         #endregion
 
@@ -198,7 +198,7 @@ namespace WinFormApp
 
         private Record Record_Last = new Record(); // 上次游戏的记录。
 
-        private Int32[,] ElementArray_Last = new Int32[CAPACITY, CAPACITY]; // 上次游戏的元素矩阵。
+        private Int32[,] ElementMatrix_Last = new Int32[CAPACITY, CAPACITY]; // 上次游戏的元素矩阵。
 
         private List<Point> ElementIndexList_Last = new List<Point>(CAPACITY * CAPACITY); // 上次游戏的元素索引列表。
 
@@ -532,7 +532,7 @@ namespace WinFormApp
 
                 RepaintCurBmp();
 
-                ElementArray_RepresentAll();
+                ElementMatrix_RepresentAll();
             }
 
             if (Panel_FunctionArea.Visible && FunctionAreaTab == FunctionAreaTabs.Record)
@@ -1307,7 +1307,7 @@ namespace WinFormApp
 
                                     if ((Index.X >= 0 && Index.X < Record_Last.Range.Width && Index.Y >= 0 && Index.Y < Record_Last.Range.Height) && (E > 0 && E <= ElementColor.Length))
                                     {
-                                        ElementArray_Last[Index.X, Index.Y] = E;
+                                        ElementMatrix_Last[Index.X, Index.Y] = E;
                                         ElementIndexList_Last.Add(Index);
                                     }
                                 }
@@ -1369,14 +1369,14 @@ namespace WinFormApp
 
             foreach (var V in ElementIndexList_Last)
             {
-                ElementArray_Last[V.X, V.Y] = 0;
+                ElementMatrix_Last[V.X, V.Y] = 0;
             }
 
             ElementIndexList_Last.Clear();
 
             foreach (var V in ElementIndexList)
             {
-                ElementArray_Last[V.X, V.Y] = ElementArray[V.X, V.Y];
+                ElementMatrix_Last[V.X, V.Y] = ElementMatrix_GetValue(V);
 
                 ElementIndexList_Last.Add(V);
             }
@@ -1397,7 +1397,7 @@ namespace WinFormApp
                 {
                     Point A = ElementIndexList[i];
 
-                    Str += "(" + A.X + "," + A.Y + "," + ElementArray[A.X, A.Y] + ")";
+                    Str += "(" + A.X + "," + A.Y + "," + ElementMatrix_GetValue(A) + ")";
                 }
             }
             Str += "]</Element>";
@@ -1430,7 +1430,7 @@ namespace WinFormApp
 
             foreach (var V in ElementIndexList_Last)
             {
-                ElementArray_Last[V.X, V.Y] = 0;
+                ElementMatrix_Last[V.X, V.Y] = 0;
             }
 
             ElementIndexList_Last.Clear();
@@ -1459,7 +1459,7 @@ namespace WinFormApp
 
         // 初始化。
 
-        private void ElementArray_Initialize()
+        private void ElementMatrix_Initialize()
         {
             //
             // 初始化。
@@ -1467,7 +1467,7 @@ namespace WinFormApp
 
             for (int i = 0; i < ElementIndexList.Count; i++)
             {
-                ElementArray[ElementIndexList[i].X, ElementIndexList[i].Y] = 0;
+                ElementMatrix[ElementIndexList[i].X, ElementIndexList[i].Y] = 0;
             }
 
             ElementIndexList.Clear();
@@ -1475,7 +1475,65 @@ namespace WinFormApp
 
         // 索引。
 
-        private Point ElementArray_GetIndex(Point P)
+        private bool ElementMatrix_IndexValid(Point A)
+        {
+            //
+            // 检查指定的索引是否有效。A：索引。
+            //
+
+            try
+            {
+                return (A.X >= 0 && A.X < Range.Width && A.Y >= 0 && A.Y < Range.Height);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private Int32 ElementMatrix_GetValue(Point A)
+        {
+            //
+            // 获取元素矩阵指定的索引的元素的值。A：索引。
+            //
+
+            try
+            {
+                if (ElementMatrix_IndexValid(A))
+                {
+                    return ElementMatrix[A.X, A.Y];
+                }
+
+                return Int32.MinValue;
+            }
+            catch
+            {
+                return Int32.MinValue;
+            }
+        }
+
+        private Int32 ElementMatrix_GetValue(Int32 X, Int32 Y)
+        {
+            //
+            // 获取元素矩阵指定的索引的元素的值。X，Y：索引。
+            //
+
+            try
+            {
+                if (ElementMatrix_IndexValid(new Point(X, Y)))
+                {
+                    return ElementMatrix[X, Y];
+                }
+
+                return Int32.MinValue;
+            }
+            catch
+            {
+                return Int32.MinValue;
+            }
+        }
+
+        private Point ElementMatrix_GetIndex(Point P)
         {
             //
             // 获取绘图容器中的指定坐标所在元素的索引。P：坐标。
@@ -1486,7 +1544,7 @@ namespace WinFormApp
                 Point dP = new Point(P.X - EAryBmpRect.X, P.Y - EAryBmpRect.Y);
                 Point A = new Point((Int32)Math.Floor((double)dP.X / ElementSize), Range.Height - 1 - (Int32)Math.Floor((double)dP.Y / ElementSize));
 
-                if (A.X >= 0 && A.X < Range.Width && A.Y >= 0 && A.Y < Range.Height)
+                if (ElementMatrix_IndexValid(A))
                 {
                     return A;
                 }
@@ -1499,11 +1557,47 @@ namespace WinFormApp
             }
         }
 
+        // 添加与移除。
+
+        private void ElementMatrix_Add(Point A, Int32 E)
+        {
+            //
+            // 向元素矩阵添加一个元素。A：索引；E：元素的值。
+            //
+
+            if (E != 0 && ElementMatrix_IndexValid(A))
+            {
+                if (!ElementIndexList.Contains(A))
+                {
+                    ElementMatrix[A.X, A.Y] = E;
+
+                    ElementIndexList.Add(A);
+                }
+            }
+        }
+
+        private void ElementMatrix_RemoveAt(Point A)
+        {
+            //
+            // 从元素矩阵移除一个元素。A：索引。
+            //
+
+            if (ElementMatrix_IndexValid(A))
+            {
+                ElementMatrix[A.X, A.Y] = 0;
+
+                if (ElementIndexList.Contains(A))
+                {
+                    ElementIndexList.Remove(A);
+                }
+            }
+        }
+
         // 颜色。
 
         private static readonly Color[] ElementColor = new Color[] { Color.Crimson, Color.DarkOrange, Color.ForestGreen, Color.BlueViolet }; // 元素颜色系列。
 
-        private Color ElementArray_GetColor(Int32 E)
+        private Color ElementMatrix_GetColor(Int32 E)
         {
             //
             // 获取元素颜色。E：元素的值。
@@ -1528,42 +1622,6 @@ namespace WinFormApp
             }
         }
 
-        // 添加与移除。
-
-        private void ElementArray_Add(Point A, Int32 E)
-        {
-            //
-            // 向元素矩阵添加一个元素。A：索引；E：元素的值。
-            //
-
-            if (E != 0 && A.X >= 0 && A.X < CAPACITY && A.Y >= 0 && A.Y < CAPACITY)
-            {
-                if (!ElementIndexList.Contains(A))
-                {
-                    ElementArray[A.X, A.Y] = E;
-
-                    ElementIndexList.Add(A);
-                }
-            }
-        }
-
-        private void ElementArray_RemoveAt(Point A)
-        {
-            //
-            // 从元素矩阵移除一个元素。A：索引。
-            //
-
-            if (A.X >= 0 && A.X < CAPACITY && A.Y >= 0 && A.Y < CAPACITY)
-            {
-                ElementArray[A.X, A.Y] = 0;
-
-                if (ElementIndexList.Contains(A))
-                {
-                    ElementIndexList.Remove(A);
-                }
-            }
-        }
-
         // 绘图与呈现。
 
         private Rectangle EAryBmpRect = new Rectangle(); // 元素矩阵位图区域（相对于绘图容器）。
@@ -1572,7 +1630,7 @@ namespace WinFormApp
 
         private Graphics EAryBmpGrap; // 元素矩阵位图绘图。
 
-        private void ElementArray_DrawInRectangle(Int32 E, Rectangle Rect, bool HighLight, bool PresentNow)
+        private void ElementMatrix_DrawInRectangle(Int32 E, Rectangle Rect, bool HighLight, bool PresentNow)
         {
             //
             // 在元素矩阵位图的指矩形区域内绘制一个元素。E：元素的值；Rect：矩形区域；HighLight：是否以高亮效果呈现此元素PresentNow：是否立即呈现此元素，如果为 true，那么将在位图中绘制此元素，并在不重绘整个位图的情况下在容器中绘制此元素，如果为 false，那么将仅在位图中绘制此元素。
@@ -1600,7 +1658,7 @@ namespace WinFormApp
 
                 GraphicsPath RndRect_Bkg = Com.Geometry.CreateRoundedRectanglePath(Rect_Bkg, (Int32)(ElementSize * ElementClientDistPct / 2));
 
-                Color Cr_Bkg = (E > 0 ? ElementArray_GetColor(0) : Color.FromArgb((Int32)(Math.Max(0, Math.Min(1, (double)(Rect.Width * Rect.Height) / (BmpRect.Width * BmpRect.Height))) * 255), ElementArray_GetColor(0)));
+                Color Cr_Bkg = (E > 0 ? ElementMatrix_GetColor(0) : Color.FromArgb((Int32)(Math.Max(0, Math.Min(1, (double)(Rect.Width * Rect.Height) / (BmpRect.Width * BmpRect.Height))) * 255), ElementMatrix_GetColor(0)));
 
                 if (!Timer_AutoAppend.Enabled && ThisRecord.CurrentSurplus > 0)
                 {
@@ -1614,7 +1672,7 @@ namespace WinFormApp
 
             GraphicsPath RndRect_Cen = Com.Geometry.CreateRoundedRectanglePath(Rect_Cen, (Int32)(ElementSize * ElementClientDistPct / 2));
 
-            Color Cr_Cen = Color.FromArgb((Int32)(Math.Max(0, Math.Min(1, (double)(Rect.Width * Rect.Height) / (BmpRect.Width * BmpRect.Height))) * 255), ElementArray_GetColor(E));
+            Color Cr_Cen = Color.FromArgb((Int32)(Math.Max(0, Math.Min(1, (double)(Rect.Width * Rect.Height) / (BmpRect.Width * BmpRect.Height))) * 255), ElementMatrix_GetColor(E));
 
             if (!Timer_AutoAppend.Enabled && ThisRecord.CurrentSurplus > 0)
             {
@@ -1650,32 +1708,32 @@ namespace WinFormApp
             }
         }
 
-        private void ElementArray_DrawInRectangle(Int32 E, Rectangle Rect, bool PresentNow)
+        private void ElementMatrix_DrawInRectangle(Int32 E, Rectangle Rect, bool PresentNow)
         {
             //
             // 在元素矩阵位图的指矩形区域内绘制一个元素。E：元素的值；Rect：矩形区域；PresentNow：是否立即呈现此元素，如果为 true，那么将在位图中绘制此元素，并在不重绘整个位图的情况下在容器中绘制此元素，如果为 false，那么将仅在位图中绘制此元素。
             //
 
-            ElementArray_DrawInRectangle(E, Rect, false, PresentNow);
+            ElementMatrix_DrawInRectangle(E, Rect, false, PresentNow);
         }
 
-        private void ElementArray_DrawAtPoint(Point A, bool PresentNow)
+        private void ElementMatrix_DrawAtPoint(Point A, bool PresentNow)
         {
             //
             // 在元素矩阵位图的指定索引处绘制一个元素。A：索引；PresentNow：是否立即呈现此元素，如果为 true，那么将在位图中绘制此元素，并在不重绘整个位图的情况下在容器中绘制此元素，如果为 false，那么将仅在位图中绘制此元素。
             //
 
-            if (A.X >= 0 && A.X < CAPACITY && A.Y >= 0 && A.Y < CAPACITY)
+            if (ElementMatrix_IndexValid(A))
             {
-                Int32 E = ElementArray[A.X, A.Y];
+                Int32 E = ElementMatrix_GetValue(A);
 
                 Rectangle Rect = new Rectangle(new Point(A.X * ElementSize, (Range.Height - 1 - A.Y) * ElementSize), new Size(ElementSize, ElementSize));
 
-                ElementArray_DrawInRectangle(E, Rect, (E > 0 && A == GameUIPointedIndex && A.Y > 0), PresentNow);
+                ElementMatrix_DrawInRectangle(E, Rect, (E > 0 && A == GameUIPointedIndex && A.Y > 0), PresentNow);
             }
         }
 
-        private void ElementArray_RepresentAll()
+        private void ElementMatrix_RepresentAll()
         {
             //
             // 更新并呈现元素矩阵包含的所有元素。
@@ -1706,11 +1764,11 @@ namespace WinFormApp
                 {
                     for (int Y = 0; Y < Range.Height; Y++)
                     {
-                        Int32 E = ElementArray[X, Y];
+                        Int32 E = ElementMatrix_GetValue(X, Y);
 
                         Rectangle Rect = new Rectangle(new Point(X * ElementSize, (Range.Height - 1 - Y) * ElementSize), new Size(ElementSize, ElementSize));
 
-                        ElementArray_DrawInRectangle(E, Rect, false);
+                        ElementMatrix_DrawInRectangle(E, Rect, false);
                     }
                 }
 
@@ -1770,7 +1828,7 @@ namespace WinFormApp
             }
         }
 
-        private void ElementArray_PresentAt(Point A)
+        private void ElementMatrix_PresentAt(Point A)
         {
             //
             // 呈现元素矩阵中指定的索引处的一个元素。A：索引。
@@ -1778,14 +1836,14 @@ namespace WinFormApp
 
             if (Panel_Environment.Visible && (Panel_Environment.Width > 0 && Panel_Environment.Height > 0))
             {
-                if (A.X >= 0 && A.X < Range.Width && A.Y >= 0 && A.Y < Range.Height)
+                if (ElementMatrix_IndexValid(A))
                 {
-                    ElementArray_DrawAtPoint(A, true);
+                    ElementMatrix_DrawAtPoint(A, true);
                 }
             }
         }
 
-        private void ElementArray_AnimatePresentAt(Point A)
+        private void ElementMatrix_AnimatePresentAt(Point A)
         {
             //
             // 以动画效果呈现元素矩阵中指定的索引处的一个元素。A：索引。
@@ -1793,9 +1851,9 @@ namespace WinFormApp
 
             if (Panel_Environment.Visible && (Panel_Environment.Width > 0 && Panel_Environment.Height > 0))
             {
-                if (A.X >= 0 && A.X < Range.Width && A.Y >= 0 && A.Y < Range.Height)
+                if (ElementMatrix_IndexValid(A))
                 {
-                    Int32 E = ElementArray[A.X, A.Y];
+                    Int32 E = ElementMatrix_GetValue(A);
 
                     Com.Animation.Frame Frame = (frameId, frameCount, msPerFrame) =>
                     {
@@ -1805,7 +1863,7 @@ namespace WinFormApp
 
                         Rectangle Rect = new Rectangle(new Point(A.X * ElementSize + (ElementSize - RectSize) / 2, (Range.Height - 1 - A.Y) * ElementSize + (ElementSize - RectSize) / 2), new Size(RectSize, RectSize));
 
-                        ElementArray_DrawInRectangle(E, Rect, false);
+                        ElementMatrix_DrawInRectangle(E, Rect, false);
 
                         RepaintEAryBmp();
                     };
@@ -1815,7 +1873,7 @@ namespace WinFormApp
             }
         }
 
-        private void ElementArray_AnimatePresentAt(List<Point> A, bool ClearBmp, Record OldRecord, Record NewRecord)
+        private void ElementMatrix_AnimatePresentAt(List<Point> A, bool ClearBmp, Record OldRecord, Record NewRecord)
         {
             //
             // 以动画效果同时呈现元素矩阵中由索引数组指定的所有元素。A：索引列表；ClearBmp：在呈现之前是否首先清除绘图；OldRecord，NewRecord：元素矩阵中所有元素在平移之前与之后的记录。
@@ -1833,7 +1891,7 @@ namespace WinFormApp
                         {
                             Rectangle Rect = new Rectangle(new Point(X * ElementSize, (Range.Height - 1 - Y) * ElementSize), new Size(ElementSize, ElementSize));
 
-                            ElementArray_DrawInRectangle(0, Rect, false);
+                            ElementMatrix_DrawInRectangle(0, Rect, false);
                         }
                     }
                 }
@@ -1846,13 +1904,13 @@ namespace WinFormApp
 
                     foreach (var V in A)
                     {
-                        if (V.X >= 0 && V.X < Range.Width && V.Y >= 0 && V.Y < Range.Height)
+                        if (ElementMatrix_IndexValid(V))
                         {
-                            Int32 E = ElementArray[V.X, V.Y];
+                            Int32 E = ElementMatrix_GetValue(V);
 
                             Rectangle Rect = new Rectangle(new Point(V.X * ElementSize + (ElementSize - RectSize) / 2, (Range.Height - 1 - V.Y) * ElementSize + (ElementSize - RectSize) / 2), new Size(RectSize, RectSize));
 
-                            ElementArray_DrawInRectangle(E, Rect, false);
+                            ElementMatrix_DrawInRectangle(E, Rect, false);
                         }
                     }
 
@@ -1873,7 +1931,7 @@ namespace WinFormApp
             }
         }
 
-        private void ElementArray_AnimatePresentAt(List<Point> A, bool ClearBmp)
+        private void ElementMatrix_AnimatePresentAt(List<Point> A, bool ClearBmp)
         {
             //
             // 以动画效果同时呈现元素矩阵中由索引数组指定的所有元素。A：索引列表；ClearBmp：在呈现之前是否首先清除绘图。
@@ -1881,11 +1939,11 @@ namespace WinFormApp
 
             if (Panel_Environment.Visible && (Panel_Environment.Width > 0 && Panel_Environment.Height > 0))
             {
-                ElementArray_AnimatePresentAt(A, ClearBmp, ThisRecord, ThisRecord);
+                ElementMatrix_AnimatePresentAt(A, ClearBmp, ThisRecord, ThisRecord);
             }
         }
 
-        private void ElementArray_AnimateMove(Point[,] OldIndex)
+        private void ElementMatrix_AnimateMove(Point[,] OldIndex)
         {
             //
             // 以动画效果呈现元素矩阵中若干元素的平移。OldIndex：元素矩阵中所有元素在平移之前的索引。
@@ -1901,17 +1959,17 @@ namespace WinFormApp
                     {
                         for (int Y = 0; Y < Range.Height; Y++)
                         {
-                            Int32 E = ElementArray[X, Y];
+                            Int32 E = ElementMatrix_GetValue(X, Y);
 
                             Rectangle Rect = new Rectangle(new Point(X * ElementSize, (Range.Height - 1 - Y) * ElementSize), new Size(ElementSize, ElementSize));
 
                             if (E != 0 && OldIndex[X, Y] != new Point(X, Y))
                             {
-                                ElementArray_DrawInRectangle(0, Rect, false);
+                                ElementMatrix_DrawInRectangle(0, Rect, false);
                             }
                             else
                             {
-                                ElementArray_DrawInRectangle(E, Rect, false);
+                                ElementMatrix_DrawInRectangle(E, Rect, false);
                             }
                         }
                     }
@@ -1920,7 +1978,7 @@ namespace WinFormApp
                     {
                         for (int Y = 0; Y < Range.Height; Y++)
                         {
-                            Int32 E = ElementArray[X, Y];
+                            Int32 E = ElementMatrix_GetValue(X, Y);
 
                             if (E != 0 && OldIndex[X, Y] != new Point(X, Y))
                             {
@@ -1928,7 +1986,7 @@ namespace WinFormApp
 
                                 Rectangle Rect = new Rectangle(new Point((Int32)((X * (1 - N) + OldIndex[X, Y].X * N) * ElementSize), (Int32)((Range.Height - 1 - (Y * (1 - N) + OldIndex[X, Y].Y * N)) * ElementSize)), new Size(ElementSize, ElementSize));
 
-                                ElementArray_DrawInRectangle(E, Rect, false);
+                                ElementMatrix_DrawInRectangle(E, Rect, false);
                             }
                         }
                     }
@@ -1946,17 +2004,17 @@ namespace WinFormApp
                     {
                         for (int Y = 0; Y < Range.Height; Y++)
                         {
-                            Int32 E = ElementArray[X, Y];
+                            Int32 E = ElementMatrix_GetValue(X, Y);
 
                             Rectangle Rect = new Rectangle(new Point(X * ElementSize, (Range.Height - 1 - Y) * ElementSize), new Size(ElementSize, ElementSize));
 
                             if (E != 0 && OldIndex[X, Y] != new Point(X, Y))
                             {
-                                ElementArray_DrawInRectangle(0, Rect, false);
+                                ElementMatrix_DrawInRectangle(0, Rect, false);
                             }
                             else
                             {
-                                ElementArray_DrawInRectangle(E, Rect, false);
+                                ElementMatrix_DrawInRectangle(E, Rect, false);
                             }
                         }
                     }
@@ -1965,7 +2023,7 @@ namespace WinFormApp
                     {
                         for (int Y = 0; Y < Range.Height; Y++)
                         {
-                            Int32 E = ElementArray[X, Y];
+                            Int32 E = ElementMatrix_GetValue(X, Y);
 
                             if (E != 0 && OldIndex[X, Y] != new Point(X, Y))
                             {
@@ -1973,7 +2031,7 @@ namespace WinFormApp
 
                                 Rectangle Rect = new Rectangle(new Point((Int32)((X + Math.Sign(OldIndex[X, Y].X - X) * N) * ElementSize), (Int32)((Range.Height - 1 - (Y + Math.Sign(OldIndex[X, Y].Y - Y) * N)) * ElementSize)), new Size(ElementSize, ElementSize));
 
-                                ElementArray_DrawInRectangle(E, Rect, false);
+                                ElementMatrix_DrawInRectangle(E, Rect, false);
                             }
                         }
                     }
@@ -1983,7 +2041,7 @@ namespace WinFormApp
 
                 Com.Animation.Show(FrameB, 5, 15);
 
-                ElementArray_RepresentAll();
+                ElementMatrix_RepresentAll();
             }
         }
 
@@ -2033,13 +2091,13 @@ namespace WinFormApp
 
         #endregion
 
-        #region 元素矩阵高级功能
+        #region 元素矩阵扩展功能
 
         // 统计。
 
         private List<Point> AdjacentEqualityIndexList = new List<Point>(CAPACITY * CAPACITY); // 元素矩阵中相邻相等元素的索引列表。
 
-        private void ElementArray_RecursivelyAccounting(Point A)
+        private void ElementMatrix_RecursivelyAccounting(Point A)
         {
             //
             // 递归统计元素矩阵中所有与指定索引处的元素相邻相等的元素的索引。A：索引。
@@ -2047,7 +2105,9 @@ namespace WinFormApp
 
             List<Point> IDListTmp = new List<Point>(4); // 每次递归过程直接相邻相等元素索引列表。
 
-            if (ElementArray[A.X, A.Y] != 0)
+            Int32 E = ElementMatrix_GetValue(A);
+
+            if (E != 0)
             {
                 if (!AdjacentEqualityIndexList.Contains(A))
                 {
@@ -2056,28 +2116,28 @@ namespace WinFormApp
 
                 Point L = new Point(A.X - 1, A.Y), R = new Point(A.X + 1, A.Y), B = new Point(A.X, A.Y - 1), T = new Point(A.X, A.Y + 1);
 
-                if ((L.Y >= 1 && L.X >= 0) && ElementArray[L.X, L.Y] == ElementArray[A.X, A.Y] && !AdjacentEqualityIndexList.Contains(L))
+                if ((L.Y >= 1 && L.X >= 0) && ElementMatrix_GetValue(L) == E && !AdjacentEqualityIndexList.Contains(L))
                 {
                     AdjacentEqualityIndexList.Add(L);
 
                     IDListTmp.Add(L);
                 }
 
-                if ((R.Y >= 1 && R.X < Range.Width) && ElementArray[R.X, R.Y] == ElementArray[A.X, A.Y] && !AdjacentEqualityIndexList.Contains(R))
+                if ((R.Y >= 1 && R.X < Range.Width) && ElementMatrix_GetValue(R) == E && !AdjacentEqualityIndexList.Contains(R))
                 {
                     AdjacentEqualityIndexList.Add(R);
 
                     IDListTmp.Add(R);
                 }
 
-                if (B.Y >= 1 && ElementArray[B.X, B.Y] == ElementArray[A.X, A.Y] && !AdjacentEqualityIndexList.Contains(B))
+                if (B.Y >= 1 && ElementMatrix_GetValue(B) == E && !AdjacentEqualityIndexList.Contains(B))
                 {
                     AdjacentEqualityIndexList.Add(B);
 
                     IDListTmp.Add(B);
                 }
 
-                if (T.Y < Range.Height && ElementArray[T.X, T.Y] == ElementArray[A.X, A.Y] && !AdjacentEqualityIndexList.Contains(T))
+                if (T.Y < Range.Height && ElementMatrix_GetValue(T) == E && !AdjacentEqualityIndexList.Contains(T))
                 {
                     AdjacentEqualityIndexList.Add(T);
 
@@ -2086,22 +2146,22 @@ namespace WinFormApp
 
                 foreach (var V in IDListTmp)
                 {
-                    ElementArray_RecursivelyAccounting(V);
+                    ElementMatrix_RecursivelyAccounting(V);
                 }
             }
         }
 
         // 逻辑消除与添加。
 
-        private void ElementArray_LogicalEliminate(Point A)
+        private void ElementMatrix_LogicalEliminate(Point A)
         {
             //
             // 逻辑消除。消除元素矩阵中所有与指定索引处的元素相邻相等的元素，向下对齐，水平向中合并。A：索引。
             //
 
-            if (A.X >= 0 && A.X < Range.Width && A.Y >= 1 && A.Y < Range.Height)
+            if (ElementMatrix_IndexValid(A) && A.Y >= 1)
             {
-                ElementArray_RecursivelyAccounting(A);
+                ElementMatrix_RecursivelyAccounting(A);
 
                 if (AdjacentEqualityIndexList.Count >= 3)
                 {
@@ -2113,7 +2173,7 @@ namespace WinFormApp
 
                     foreach (var V in AdjacentEqualityIndexList)
                     {
-                        ElementArray_RemoveAt(V);
+                        ElementMatrix_RemoveAt(V);
 
                         if (V.Y == Range.Height - 1 && CeilingElementIndexList.Contains(V.X))
                         {
@@ -2124,7 +2184,7 @@ namespace WinFormApp
                     NewRecord.CurrentScore = Math.Floor(ThisRecord.CurrentScore + (Math.Sqrt(ThisRecord.Level) + (double)AdjacentEqualityIndexList.Count / 3) * AdjacentEqualityIndexList.Count);
                     NewRecord.CurrentSurplus = Math.Max(0, ThisRecord.CurrentSurplus - AdjacentEqualityIndexList.Count);
 
-                    ElementArray_AnimatePresentAt(AdjacentEqualityIndexList, false, OldRecord, NewRecord);
+                    ElementMatrix_AnimatePresentAt(AdjacentEqualityIndexList, false, OldRecord, NewRecord);
 
                     // 向下对齐：
 
@@ -2140,14 +2200,14 @@ namespace WinFormApp
                             {
                                 if (NullColumn)
                                 {
-                                    if (ElementArray[X, Y] != 0)
+                                    if (ElementMatrix_GetValue(X, Y) != 0)
                                     {
                                         NullColumn = false;
                                     }
                                 }
                                 else
                                 {
-                                    if (ElementArray[X, Y] == 0)
+                                    if (ElementMatrix_GetValue(X, Y) == 0)
                                     {
                                         NeedAlignment = true;
 
@@ -2174,11 +2234,11 @@ namespace WinFormApp
 
                             for (int Y = 1; Y < Range.Height; Y++)
                             {
-                                if (ElementArray[X, Y] != 0)
+                                if (ElementMatrix_GetValue(X, Y) != 0)
                                 {
-                                    Column.Add(ElementArray[X, Y]);
+                                    Column.Add(ElementMatrix_GetValue(X, Y));
 
-                                    ElementArray_RemoveAt(new Point(X, Y));
+                                    ElementMatrix_RemoveAt(new Point(X, Y));
 
                                     OldIndex[X, Column.Count] = new Point(X, Y);
                                 }
@@ -2186,11 +2246,11 @@ namespace WinFormApp
 
                             for (int Y = 0; Y < Column.Count; Y++)
                             {
-                                ElementArray_Add(new Point(X, Y + 1), Column[Y]);
+                                ElementMatrix_Add(new Point(X, Y + 1), Column[Y]);
                             }
                         }
 
-                        ElementArray_AnimateMove(OldIndex);
+                        ElementMatrix_AnimateMove(OldIndex);
                     }
 
                     // 水平向中合并：
@@ -2200,7 +2260,7 @@ namespace WinFormApp
 
                     for (int X = 0; X < Range.Width; X++)
                     {
-                        if (ElementArray[X, 1] != 0)
+                        if (ElementMatrix_GetValue(X, 1) != 0)
                         {
                             NullMatrix = false;
 
@@ -2214,7 +2274,7 @@ namespace WinFormApp
                     {
                         for (int X = Range.Width - 1; X >= Left; X--)
                         {
-                            if (ElementArray[X, 1] != 0)
+                            if (ElementMatrix_GetValue(X, 1) != 0)
                             {
                                 NullMatrix = false;
 
@@ -2229,7 +2289,7 @@ namespace WinFormApp
                     {
                         for (int X = Left; X <= Right; X++)
                         {
-                            if (ElementArray[X, 1] == 0)
+                            if (ElementMatrix_GetValue(X, 1) == 0)
                             {
                                 NeedConsolidation = true;
 
@@ -2253,17 +2313,17 @@ namespace WinFormApp
 
                         for (int X = 0; X < Range.Width; X++)
                         {
-                            if (ElementArray[X, 1] != 0)
+                            if (ElementMatrix_GetValue(X, 1) != 0)
                             {
                                 IndexList.Add(X);
 
                                 for (int Y = 1; Y < Range.Height; Y++)
                                 {
-                                    if (ElementArray[X, Y] != 0)
+                                    if (ElementMatrix_GetValue(X, Y) != 0)
                                     {
-                                        Matrix[IndexList.Count - 1, Y] = ElementArray[X, Y];
+                                        Matrix[IndexList.Count - 1, Y] = ElementMatrix_GetValue(X, Y);
 
-                                        ElementArray_RemoveAt(new Point(X, Y));
+                                        ElementMatrix_RemoveAt(new Point(X, Y));
                                     }
                                     else
                                     {
@@ -2279,7 +2339,7 @@ namespace WinFormApp
                             {
                                 if (Matrix[X, Y] != 0)
                                 {
-                                    ElementArray_Add(new Point((Range.Width - IndexList.Count) / 2 + X, Y), Matrix[X, Y]);
+                                    ElementMatrix_Add(new Point((Range.Width - IndexList.Count) / 2 + X, Y), Matrix[X, Y]);
 
                                     OldIndex[(Range.Width - IndexList.Count) / 2 + X, Y] = new Point(IndexList[X], Y);
                                 }
@@ -2290,12 +2350,15 @@ namespace WinFormApp
                             }
                         }
 
-                        ElementArray_AnimateMove(OldIndex);
+                        ElementMatrix_AnimateMove(OldIndex);
                     }
 
                     //
 
-                    ElementArray_PresentAt(GameUIPointedIndex);
+                    if (ElementMatrix_IndexValid(GameUIPointedIndex) && ElementMatrix_GetValue(GameUIPointedIndex) > 0)
+                    {
+                        ElementMatrix_PresentAt(GameUIPointedIndex);
+                    }
 
                     Judgement();
                 }
@@ -2304,22 +2367,22 @@ namespace WinFormApp
             }
         }
 
-        private void ElementArray_LogicalAppend(bool Present)
+        private void ElementMatrix_LogicalAppend(bool Present)
         {
             //
             // 向元素矩阵逻辑添加一个元素，元素的值按照由难度等级决定的概率产生。Present：是否呈现此元素。
             //
 
-            if (ElementArray[Range.Width - 1, 0] != 0)
+            if (ElementMatrix_GetValue(Range.Width - 1, 0) != 0)
             {
                 for (int X = 0; X < Range.Width; X++)
                 {
                     for (int Y = Range.Height - 2; Y >= 0; Y--)
                     {
-                        if (ElementArray[X, Y] != 0)
+                        if (ElementMatrix_GetValue(X, Y) != 0)
                         {
-                            ElementArray_Add(new Point(X, Y + 1), ElementArray[X, Y]);
-                            ElementArray_RemoveAt(new Point(X, Y));
+                            ElementMatrix_Add(new Point(X, Y + 1), ElementMatrix_GetValue(X, Y));
+                            ElementMatrix_RemoveAt(new Point(X, Y));
                         }
                     }
                 }
@@ -2336,21 +2399,24 @@ namespace WinFormApp
                         }
                     }
 
-                    ElementArray_AnimateMove(OldIndex);
+                    ElementMatrix_AnimateMove(OldIndex);
 
-                    ElementArray_PresentAt(GameUIPointedIndex);
+                    if (ElementMatrix_IndexValid(GameUIPointedIndex) && ElementMatrix_GetValue(GameUIPointedIndex) > 0)
+                    {
+                        ElementMatrix_PresentAt(GameUIPointedIndex);
+                    }
                 }
             }
 
             for (int X = 0; X < Range.Width; X++)
             {
-                if (ElementArray[X, 0] == 0)
+                if (ElementMatrix_GetValue(X, 0) == 0)
                 {
                     if (DifficultyLevel < 0)
                     {
                         Int32 E = Com.Statistics.RandomInteger(ElementColor.Length) + 1;
 
-                        while (X == 0 ? (E != ElementArray[0, 1] && E != ElementArray[1, 1]) : (X == Range.Width - 1 ? (E != ElementArray[Range.Width - 2, 0] && E != ElementArray[Range.Width - 2, 1] && E != ElementArray[Range.Width - 1, 1]) : (E != ElementArray[X - 1, 0] && E != ElementArray[X - 1, 1] && E != ElementArray[X, 1] && E != ElementArray[X + 1, 1])))
+                        while (X == 0 ? (E != ElementMatrix_GetValue(0, 1) && E != ElementMatrix_GetValue(1, 1)) : (X == Range.Width - 1 ? (E != ElementMatrix_GetValue(Range.Width - 2, 0) && E != ElementMatrix_GetValue(Range.Width - 2, 1) && E != ElementMatrix_GetValue(Range.Width - 1, 1)) : (E != ElementMatrix_GetValue(X - 1, 0) && E != ElementMatrix_GetValue(X - 1, 1) && E != ElementMatrix_GetValue(X, 1) && E != ElementMatrix_GetValue(X + 1, 1))))
                         {
                             if (Com.Statistics.RandomInteger(DifficultyLevel_MIN, 0) <= Math.Max(DifficultyLevel_MIN, DifficultyLevel))
                             {
@@ -2360,13 +2426,13 @@ namespace WinFormApp
                             E = Com.Statistics.RandomInteger(ElementColor.Length) + 1;
                         }
 
-                        ElementArray_Add(new Point(X, 0), E);
+                        ElementMatrix_Add(new Point(X, 0), E);
                     }
                     else if (DifficultyLevel > 0)
                     {
                         Int32 E = Com.Statistics.RandomInteger(ElementColor.Length) + 1;
 
-                        while (X == 0 ? (E == ElementArray[0, 1] || E == ElementArray[1, 1]) : (X == Range.Width - 1 ? (E == ElementArray[Range.Width - 2, 0] || E == ElementArray[Range.Width - 2, 1] || E == ElementArray[Range.Width - 1, 1]) : (E == ElementArray[X - 1, 0] || E == ElementArray[X - 1, 1] || E == ElementArray[X, 1] || E == ElementArray[X + 1, 1])))
+                        while (X == 0 ? (E == ElementMatrix_GetValue(0, 1) || E == ElementMatrix_GetValue(1, 1)) : (X == Range.Width - 1 ? (E == ElementMatrix_GetValue(Range.Width - 2, 0) || E == ElementMatrix_GetValue(Range.Width - 2, 1) || E == ElementMatrix_GetValue(Range.Width - 1, 1)) : (E == ElementMatrix_GetValue(X - 1, 0) || E == ElementMatrix_GetValue(X - 1, 1) || E == ElementMatrix_GetValue(X, 1) || E == ElementMatrix_GetValue(X + 1, 1))))
                         {
                             if (Com.Statistics.RandomInteger(1, DifficultyLevel_MAX + 1) >= Math.Min(DifficultyLevel_MAX, DifficultyLevel))
                             {
@@ -2376,16 +2442,16 @@ namespace WinFormApp
                             E = Com.Statistics.RandomInteger(ElementColor.Length) + 1;
                         }
 
-                        ElementArray_Add(new Point(X, 0), E);
+                        ElementMatrix_Add(new Point(X, 0), E);
                     }
                     else
                     {
-                        ElementArray_Add(new Point(X, 0), Com.Statistics.RandomInteger(ElementColor.Length) + 1);
+                        ElementMatrix_Add(new Point(X, 0), Com.Statistics.RandomInteger(ElementColor.Length) + 1);
                     }
 
                     if (Present)
                     {
-                        ElementArray_AnimatePresentAt(new Point(X, 0));
+                        ElementMatrix_AnimatePresentAt(new Point(X, 0));
                     }
 
                     break;
@@ -2440,7 +2506,7 @@ namespace WinFormApp
             {
                 AutoAppend_Cyc = 0;
 
-                ElementArray_LogicalAppend(true);
+                ElementMatrix_LogicalAppend(true);
 
                 Judgement();
             }
@@ -2479,11 +2545,11 @@ namespace WinFormApp
                 ThisRecord.CurrentScore = 0;
                 ThisRecord.CurrentSurplus = (Lv + 10) * Range.Width;
 
-                ElementArray_Initialize();
+                ElementMatrix_Initialize();
 
                 for (int i = 0; i <= Math.Min(Range.Height - 6, Lv + 4) * Range.Width; i++)
                 {
-                    ElementArray_LogicalAppend(false);
+                    ElementMatrix_LogicalAppend(false);
                 }
 
                 RepaintCurBmp();
@@ -2494,7 +2560,7 @@ namespace WinFormApp
 
                 if (Present)
                 {
-                    ElementArray_AnimatePresentAt(ElementIndexList, true);
+                    ElementMatrix_AnimatePresentAt(ElementIndexList, true);
                 }
 
                 Judgement();
@@ -2515,7 +2581,7 @@ namespace WinFormApp
 
             for (int X = 0; X < Range.Width; X++)
             {
-                if (ElementArray[X, Range.Height - 1] != 0)
+                if (ElementMatrix_GetValue(X, Range.Height - 1) != 0)
                 {
                     CeilingElementIndexList.Add(X);
                 }
@@ -2525,13 +2591,13 @@ namespace WinFormApp
 
             if (!GameIsOver)
             {
-                if (CeilingElementIndexList.Count > 0 && ElementArray[Range.Width - 1, 0] != 0)
+                if (CeilingElementIndexList.Count > 0 && ElementMatrix_GetValue(Range.Width - 1, 0) != 0)
                 {
                     GameIsOver = true;
 
                     AutoAppendStop();
 
-                    ElementArray_RepresentAll();
+                    ElementMatrix_RepresentAll();
 
                     ThisRecord.Range = Range;
                     ThisRecord.DifficultyLevel = DifficultyLevel;
@@ -2546,7 +2612,7 @@ namespace WinFormApp
                 {
                     AutoAppendStop();
 
-                    ElementArray_RepresentAll();
+                    ElementMatrix_RepresentAll();
 
                     PictureBox_Interrupt.Image = InterruptImages.Resume;
                 }
@@ -2615,14 +2681,14 @@ namespace WinFormApp
                             ThisRecord.CurrentScore = Record_Last.CurrentScore;
                             ThisRecord.CurrentSurplus = Record_Last.CurrentSurplus;
 
-                            ElementArray_Initialize();
+                            ElementMatrix_Initialize();
 
                             foreach (var V in ElementIndexList_Last)
                             {
-                                ElementArray_Add(V, ElementArray_Last[V.X, V.Y]);
+                                ElementMatrix_Add(V, ElementMatrix_Last[V.X, V.Y]);
                             }
 
-                            ElementArray_AnimatePresentAt(ElementIndexList, true);
+                            ElementMatrix_AnimatePresentAt(ElementIndexList, true);
 
                             Judgement();
                         }
@@ -2633,7 +2699,9 @@ namespace WinFormApp
                     {
                         AutoAppendStop();
 
-                        ElementArray_RepresentAll();
+                        GameUIPointedIndex = new Point(-1, -1);
+
+                        ElementMatrix_RepresentAll();
 
                         RepaintCurBmp();
 
@@ -2645,7 +2713,7 @@ namespace WinFormApp
                     {
                         AutoAppendStart();
 
-                        ElementArray_RepresentAll();
+                        ElementMatrix_RepresentAll();
 
                         Judgement();
 
@@ -2664,7 +2732,7 @@ namespace WinFormApp
 
                         SelectMissionFromLevel(ThisRecord.Level + 1, true);
 
-                        ElementArray_RepresentAll();
+                        ElementMatrix_RepresentAll();
 
                         PictureBox_Interrupt.Image = InterruptImages.Pause;
                     }
@@ -2677,7 +2745,7 @@ namespace WinFormApp
 
                         SaveUserData();
 
-                        ElementArray_Initialize();
+                        ElementMatrix_Initialize();
 
                         //
 
@@ -2701,7 +2769,7 @@ namespace WinFormApp
                             SelectMissionFromLevel(ThisRecord.Level + 1, true);
                         }
 
-                        ElementArray_RepresentAll();
+                        ElementMatrix_RepresentAll();
 
                         PictureBox_Interrupt.Enabled = true;
                         PictureBox_Interrupt.Image = InterruptImages.Pause;
@@ -2955,7 +3023,7 @@ namespace WinFormApp
 
             //
 
-            ElementArray_Initialize();
+            ElementMatrix_Initialize();
 
             //
 
@@ -2998,7 +3066,7 @@ namespace WinFormApp
 
             RepaintCurBmp();
 
-            ElementArray_RepresentAll();
+            ElementMatrix_RepresentAll();
         }
 
         private void ExitGameUI()
@@ -3016,7 +3084,7 @@ namespace WinFormApp
 
             //
 
-            ElementArray_Initialize();
+            ElementMatrix_Initialize();
 
             //
 
@@ -3048,15 +3116,22 @@ namespace WinFormApp
 
             if (Timer_AutoAppend.Enabled)
             {
-                Point A = ElementArray_GetIndex(Com.Geometry.GetCursorPositionOfControl(Panel_Environment));
+                Point A = ElementMatrix_GetIndex(Com.Geometry.GetCursorPositionOfControl(Panel_Environment));
 
                 if (GameUIPointedIndex != A)
                 {
                     Point LastPointedIndex = GameUIPointedIndex;
                     GameUIPointedIndex = A;
 
-                    ElementArray_PresentAt(LastPointedIndex);
-                    ElementArray_PresentAt(GameUIPointedIndex);
+                    if (ElementMatrix_IndexValid(LastPointedIndex) && ElementMatrix_GetValue(LastPointedIndex) > 0)
+                    {
+                        ElementMatrix_PresentAt(LastPointedIndex);
+                    }
+
+                    if (ElementMatrix_IndexValid(GameUIPointedIndex) && ElementMatrix_GetValue(GameUIPointedIndex) > 0)
+                    {
+                        ElementMatrix_PresentAt(GameUIPointedIndex);
+                    }
                 }
             }
         }
@@ -3072,8 +3147,10 @@ namespace WinFormApp
                 Point LastPointedIndex = GameUIPointedIndex;
                 GameUIPointedIndex = new Point(-1, -1);
 
-                ElementArray_PresentAt(LastPointedIndex);
-                ElementArray_PresentAt(GameUIPointedIndex);
+                if (ElementMatrix_IndexValid(LastPointedIndex) && ElementMatrix_GetValue(LastPointedIndex) > 0)
+                {
+                    ElementMatrix_PresentAt(LastPointedIndex);
+                }
             }
         }
 
@@ -3085,15 +3162,15 @@ namespace WinFormApp
 
             if (Timer_AutoAppend.Enabled && e.Button == MouseButtons.Left)
             {
-                Point A = ElementArray_GetIndex(Com.Geometry.GetCursorPositionOfControl(Panel_Environment));
+                Point A = ElementMatrix_GetIndex(Com.Geometry.GetCursorPositionOfControl(Panel_Environment));
 
-                if (A.X >= 0 && A.X < Range.Width && A.Y >= 0 && A.Y < Range.Height)
+                if (ElementMatrix_IndexValid(A))
                 {
                     if (A.Y >= 1)
                     {
-                        if (ElementArray[A.X, A.Y] != 0)
+                        if (ElementMatrix_GetValue(A) != 0)
                         {
-                            ElementArray_LogicalEliminate(A);
+                            ElementMatrix_LogicalEliminate(A);
                         }
                     }
                     else
@@ -3113,17 +3190,17 @@ namespace WinFormApp
 
                                 for (int X = 0; X < Range.Width; X++)
                                 {
-                                    if (ElementArray[X, 0] == 0)
+                                    if (ElementMatrix_GetValue(X, 0) == 0)
                                     {
                                         BottomNew.Add(new Point(X, 0));
 
-                                        ElementArray_LogicalAppend(false);
+                                        ElementMatrix_LogicalAppend(false);
                                     }
                                 }
 
-                                ElementArray_AnimatePresentAt(BottomNew, false);
+                                ElementMatrix_AnimatePresentAt(BottomNew, false);
 
-                                ElementArray_LogicalAppend(true);
+                                ElementMatrix_LogicalAppend(true);
 
                                 Judgement();
                             }
@@ -3305,7 +3382,7 @@ namespace WinFormApp
 
             Int32 FloorCount = 0;
 
-            while (FloorCount < Range.Width && ElementArray[FloorCount, 0] != 0)
+            while (FloorCount < Range.Width && ElementMatrix_GetValue(FloorCount, 0) != 0)
             {
                 FloorCount++;
             }
