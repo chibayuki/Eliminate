@@ -2,7 +2,7 @@
 Copyright © 2013-2018 chibayuki@foxmail.com
 
 消除方块
-Version 7.1.17000.4720.R16.180617-0000
+Version 7.1.17000.4720.R16.180618-0000
 
 This file is part of 消除方块
 
@@ -39,7 +39,7 @@ namespace WinFormApp
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
         private static readonly string LabString = "R16"; // 分支名。
-        private static readonly string BuildTime = "180617-0000"; // 编译时间。
+        private static readonly string BuildTime = "180618-0000"; // 编译时间。
 
         //
 
@@ -820,11 +820,11 @@ namespace WinFormApp
                         {
                             Version NewestVersion = OldVersionList_Copy[0];
 
-                            foreach (var V in OldVersionList_Copy)
+                            foreach (Version Ver in OldVersionList_Copy)
                             {
-                                if (NewestVersion <= V)
+                                if (NewestVersion <= Ver)
                                 {
-                                    NewestVersion = V;
+                                    NewestVersion = Ver;
                                 }
                             }
 
@@ -866,9 +866,9 @@ namespace WinFormApp
             {
                 if (OldVersionList.Count > 0)
                 {
-                    foreach (var V in OldVersionList)
+                    foreach (Version Ver in OldVersionList)
                     {
-                        string Dir = RootDir_Product + "\\" + V.Build + "." + V.Revision;
+                        string Dir = RootDir_Product + "\\" + Ver.Build + "." + Ver.Revision;
 
                         if (Directory.Exists(Dir))
                         {
@@ -971,11 +971,11 @@ namespace WinFormApp
                     {
                         string SubStr = Com.Text.GetIntervalString(Cfg, "<Theme>", "</Theme>", false, false);
 
-                        foreach (var V in Enum.GetValues(typeof(Com.WinForm.Theme)))
+                        foreach (object Obj in Enum.GetValues(typeof(Com.WinForm.Theme)))
                         {
-                            if (SubStr.Trim().ToUpper() == V.ToString().ToUpper())
+                            if (SubStr.Trim().ToUpper() == Obj.ToString().ToUpper())
                             {
-                                Me.Theme = (Com.WinForm.Theme)V;
+                                Me.Theme = (Com.WinForm.Theme)Obj;
 
                                 break;
                             }
@@ -1379,18 +1379,18 @@ namespace WinFormApp
 
             Record_Last = ThisRecord;
 
-            foreach (var V in ElementIndexList_Last)
+            foreach (Point A in ElementIndexList_Last)
             {
-                ElementMatrix_Last[V.X, V.Y] = 0;
+                ElementMatrix_Last[A.X, A.Y] = 0;
             }
 
             ElementIndexList_Last.Clear();
 
-            foreach (var V in ElementIndexList)
+            foreach (Point A in ElementIndexList)
             {
-                ElementMatrix_Last[V.X, V.Y] = ElementMatrix_GetValue(V);
+                ElementMatrix_Last[A.X, A.Y] = ElementMatrix_GetValue(A);
 
-                ElementIndexList_Last.Add(V);
+                ElementIndexList_Last.Add(A);
             }
 
             //
@@ -1440,9 +1440,9 @@ namespace WinFormApp
             // 擦除上次游戏。
             //
 
-            foreach (var V in ElementIndexList_Last)
+            foreach (Point A in ElementIndexList_Last)
             {
-                ElementMatrix_Last[V.X, V.Y] = 0;
+                ElementMatrix_Last[A.X, A.Y] = 0;
             }
 
             ElementIndexList_Last.Clear();
@@ -1914,13 +1914,13 @@ namespace WinFormApp
 
                     Int32 RectSize = (Int32)Math.Max(1, ElementSize * Pct_F);
 
-                    foreach (var V in A)
+                    foreach (Point _A in A)
                     {
-                        if (ElementMatrix_IndexValid(V))
+                        if (ElementMatrix_IndexValid(_A))
                         {
-                            Int32 E = ElementMatrix_GetValue(V);
+                            Int32 E = ElementMatrix_GetValue(_A);
 
-                            Rectangle Rect = new Rectangle(new Point(V.X * ElementSize + (ElementSize - RectSize) / 2, (Range.Height - 1 - V.Y) * ElementSize + (ElementSize - RectSize) / 2), new Size(RectSize, RectSize));
+                            Rectangle Rect = new Rectangle(new Point(_A.X * ElementSize + (ElementSize - RectSize) / 2, (Range.Height - 1 - _A.Y) * ElementSize + (ElementSize - RectSize) / 2), new Size(RectSize, RectSize));
 
                             ElementMatrix_DrawInRectangle(E, Rect, false);
                         }
@@ -2156,9 +2156,9 @@ namespace WinFormApp
                     IDListTmp.Add(T);
                 }
 
-                foreach (var V in IDListTmp)
+                foreach (Point _A in IDListTmp)
                 {
-                    ElementMatrix_RecursivelyAccounting(V);
+                    ElementMatrix_RecursivelyAccounting(_A);
                 }
             }
         }
@@ -2183,13 +2183,13 @@ namespace WinFormApp
 
                     // 消除：
 
-                    foreach (var V in AdjacentEqualityIndexList)
+                    foreach (Point _A in AdjacentEqualityIndexList)
                     {
-                        ElementMatrix_RemoveAt(V);
+                        ElementMatrix_RemoveAt(_A);
 
-                        if (V.Y == Range.Height - 1 && CeilingElementIndexList.Contains(V.X))
+                        if (_A.Y == Range.Height - 1 && CeilingElementIndexList.Contains(_A.X))
                         {
-                            CeilingElementIndexList.Remove(V.X);
+                            CeilingElementIndexList.Remove(_A.X);
                         }
                     }
 
@@ -2695,9 +2695,9 @@ namespace WinFormApp
 
                             ElementMatrix_Initialize();
 
-                            foreach (var V in ElementIndexList_Last)
+                            foreach (Point A in ElementIndexList_Last)
                             {
-                                ElementMatrix_Add(V, ElementMatrix_Last[V.X, V.Y]);
+                                ElementMatrix_Add(A, ElementMatrix_Last[A.X, A.Y]);
                             }
 
                             ElementMatrix_AnimatePresentAt(ElementIndexList, true);
@@ -3191,9 +3191,9 @@ namespace WinFormApp
                         {
                             Int32 MaxY = 0;
 
-                            foreach (var V in ElementIndexList)
+                            foreach (Point _A in ElementIndexList)
                             {
-                                MaxY = Math.Max(MaxY, V.Y);
+                                MaxY = Math.Max(MaxY, _A.Y);
                             }
 
                             if (MaxY <= Range.Height - 2)
@@ -3384,11 +3384,11 @@ namespace WinFormApp
 
             Int32 YMaxID = 0;
 
-            foreach (var V in ElementIndexList)
+            foreach (Point A in ElementIndexList)
             {
-                if (YMaxID < V.Y)
+                if (YMaxID < A.Y)
                 {
-                    YMaxID = V.Y;
+                    YMaxID = A.Y;
                 }
             }
 
@@ -3439,12 +3439,12 @@ namespace WinFormApp
 
             CurBmpGrap.FillRectangle(new SolidBrush(Color.FromArgb(192, Color_TimeRemaining)), Rect_TimeRemaining);
 
-            foreach (var V in CeilingElementIndexList)
+            foreach (Int32 Val in CeilingElementIndexList)
             {
                 Rectangle Rect = new Rectangle();
                 Int32 PolygonHeight = Math.Max(1, Math.Min(14, ElementSize / 2));
                 Rect.Size = new Size(PolygonHeight * 2 - 1, PolygonHeight);
-                Rect.Location = new Point(EAryBmpRect.X + V * ElementSize + (ElementSize - Rect.Width) / 2, Panel_Current.Height - Rect.Height);
+                Rect.Location = new Point(EAryBmpRect.X + Val * ElementSize + (ElementSize - Rect.Width) / 2, Panel_Current.Height - Rect.Height);
 
                 CurBmpGrap.FillPolygon(new LinearGradientBrush(new Point(Rect.X, Rect.Y - 1), new Point(Rect.X, Rect.Bottom), Color.Transparent, Color_TimeRemaining), new Point[] { new Point(Rect.X, Rect.Y), new Point(Rect.Right, Rect.Y), new Point(Rect.X + Rect.Width / 2, Rect.Bottom) });
             }
@@ -3509,9 +3509,9 @@ namespace WinFormApp
             {
                 Panel_Current.CreateGraphics().DrawImage(CurBmp, new Point(0, 0));
 
-                foreach (var V in Panel_Current.Controls)
+                foreach (object Obj in Panel_Current.Controls)
                 {
-                    ((Control)V).Refresh();
+                    ((Control)Obj).Refresh();
                 }
             }
         }
@@ -3637,11 +3637,11 @@ namespace WinFormApp
 
                     Panel_FunctionAreaTab.AutoScroll = false;
 
-                    foreach (var V in Panel_FunctionAreaTab.Controls)
+                    foreach (object Obj in Panel_FunctionAreaTab.Controls)
                     {
-                        if (V is Panel)
+                        if (Obj is Panel)
                         {
-                            Panel Pnl = V as Panel;
+                            Panel Pnl = Obj as Panel;
 
                             Pnl.Location = new Point(0, 0);
                         }
