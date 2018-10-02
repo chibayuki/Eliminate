@@ -2,7 +2,7 @@
 Copyright © 2018 chibayuki@foxmail.com
 
 消除方块 (Eliminate)
-Version 7.1.17000.6079.R17.180924-0000
+Version 7.1.17000.6107.R17.181002-1400
 
 This file is part of "消除方块" (Eliminate)
 
@@ -39,7 +39,7 @@ namespace WinFormApp
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
         private static readonly string LabString = "R17"; // 分支名。
-        private static readonly string BuildTime = "180924-0000"; // 编译时间。
+        private static readonly string BuildTime = "181002-1400"; // 编译时间。
 
         //
 
@@ -70,8 +70,8 @@ namespace WinFormApp
             new Version(7, 1, 17000, 4407),
             new Version(7, 1, 17000, 4491),
             new Version(7, 1, 17000, 4575),
-            new Version(7, 1, 17000, 4720),/*
-            new Version(7, 1, 17000, 6079)*/
+            new Version(7, 1, 17000, 4720),
+            new Version(7, 1, 17000, 6079)
         };
 
         //
