@@ -1,8 +1,8 @@
 ﻿/* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
-Copyright © 2018 chibayuki@foxmail.com
+Copyright © 2019 chibayuki@foxmail.com
 
 消除方块 (Eliminate)
-Version 7.1.17000.6107.R17.181002-1400
+Version 7.1.17000.6116.R18.190525-1400
 
 This file is part of "消除方块" (Eliminate)
 
@@ -32,14 +32,14 @@ namespace WinFormApp
         #region 版本信息
 
         private static readonly string ApplicationName = Application.ProductName; // 程序名。
-        private static readonly string ApplicationEdition = "7.1.17"; // 程序版本。
+        private static readonly string ApplicationEdition = "7.1.18"; // 程序版本。
 
         private static readonly Int32 MajorVersion = new Version(Application.ProductVersion).Major; // 主版本。
         private static readonly Int32 MinorVersion = new Version(Application.ProductVersion).Minor; // 副版本。
         private static readonly Int32 BuildNumber = new Version(Application.ProductVersion).Build; // 版本号。
         private static readonly Int32 BuildRevision = new Version(Application.ProductVersion).Revision; // 修订版本。
-        private static readonly string LabString = "R17"; // 分支名。
-        private static readonly string BuildTime = "181002-1400"; // 编译时间。
+        private static readonly string LabString = "R18"; // 分支名。
+        private static readonly string BuildTime = "190525-1400"; // 编译时间。
 
         //
 
@@ -71,7 +71,8 @@ namespace WinFormApp
             new Version(7, 1, 17000, 4491),
             new Version(7, 1, 17000, 4575),
             new Version(7, 1, 17000, 4720),
-            new Version(7, 1, 17000, 6079)
+            new Version(7, 1, 17000, 6079),
+            new Version(7, 1, 17000, 6107)
         };
 
         //
@@ -4122,10 +4123,7 @@ namespace WinFormApp
             // 鼠标释放 Panel_DifficultyLevelAdjustment。
             //
 
-            if (e.Button == MouseButtons.Left)
-            {
-                DifficultyLevelIsAdjusting = false;
-            }
+            DifficultyLevelIsAdjusting = false;
         }
 
         private void Panel_DifficultyLevelAdjustment_MouseMove(object sender, MouseEventArgs e)
